@@ -2,7 +2,6 @@
 import os
 import sys
 class get_files(object):
-   _path = os.getcwd()   ## get pwd as default directory
    
    def __init__(self,**kwargs):
       self._path = os.getcwd()
