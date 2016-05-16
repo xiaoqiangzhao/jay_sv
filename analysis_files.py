@@ -5,9 +5,26 @@ import re
 import sqlite3
 
 class analysis_files(object):
-   _file_list = "./file_list"    ## default file list
-   re_class = re.compile(r'^\s{0,}(virtual){0,1}\s{0,}class\s+(\w+)\s+extends\s+(\w+)')  ## group[0]: virtual group[1]: class name group[2]: parent name
+   re_class = re.compile(r'^\s{0,}(virtual){0,1}\s{0,}class\s+(.*)\s+extends\s+(\w+)')  ## group[1]: virtual group[2]: class name group[3]: parent name
    re_end_class = re.compile(r'^\s{0,}endclass')  ## end of class
+
+   _file_list = "./file_list"    ## default file list
+   output_db = "./db/default.db"   ## set default args
+   ana_type = "sv"
+   table_name = "classes"
+   def __init__(self,**kwargs):
+      print("initialization...")
+      for k,w in kwargs.items():
+         print(k,w)
+      if "output_db" in kwargs:
+         self.output_db = kwargs["output_db"]
+      if "ana_type" in kwargs:
+         self.ana_type = kwargs["ana_type"]
+      if "table_name" in kwargs:
+         self.table_name = kwargs["table_name"]
+      if "source_file" in kwargs:
+         self._file_list = kwargs["source_file"]
+
    def IsTableExist(self,cursor,table_name): 
       cursor.execute('select name from sqlite_master where type="table" and name = ?',(table_name,))
       table=cursor.fetchall()
@@ -17,7 +34,18 @@ class analysis_files(object):
       else:
          return False
 
-   def analysis(self,file_name,output_db="./db/default.db",ana_type="sv",table_name="classes"):
+   def analysis(self,file_name,**kwargs):
+      output_db = self.output_db
+      ana_type  = self.ana_type
+      table_name = self.table_name
+
+      if "arg_output_db" in kwargs :
+         output_db = kwargs["arg_output_db"]
+      if "arg_ana_type" in kwargs:
+         ana_type = kwargs["arg_ana_type"]
+      if "arg_table_name" in kwargs:
+         table_name = kwargs["arg_table_name"]
+
       mx_conn = sqlite3.connect(output_db)
       mx_cursor = mx_conn.cursor()
       class_found = False
@@ -36,7 +64,17 @@ class analysis_files(object):
       mx_conn.commit()
       mx_conn.close()
 
-   def update_db(self,source_filelist=_file_list,output_db="./db/default.db",ana_type="sv",table_name="classes"):
+   def update_db(self,source_filelist=_file_list,**kwargs):
+      output_db = self.output_db
+      ana_type  = self.ana_type
+      table_name = self.table_name
+      if "arg_output_db" in kwargs :
+         output_db = kwargs["arg_output_db"]
+      if "arg_ana_type" in kwargs:
+         ana_type = kwargs["arg_ana_type"]
+      if "arg_table_name" in kwargs:
+         table_name = kwargs["arg_table_name"]
+
       print("connecting to database: %s"% os.path.abspath(output_db))
       mx_conn = sqlite3.connect(output_db)
       mx_cursor = mx_conn.cursor()
@@ -50,10 +88,10 @@ class analysis_files(object):
       with open (source_filelist,'r') as f:
          for line in f.readlines():
             line=line.strip()
-            self.analysis(line,output_db,ana_type,table_name)
+            self.analysis(line,arg_output_db=output_db, arg_ana_type=ana_type, arg_table_name=table_name)
    pass
 
-
-a=analysis_files()
-a.update_db("file_list_0")
+if __name__=='__main__':
+   a=analysis_files(output_db="./db/test.db")
+   a.update_db("file_list_0")
 
