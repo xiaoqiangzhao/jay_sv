@@ -2,6 +2,17 @@
 import os
 import sys
 class get_files(object):
+   '''
+   example:
+      my_get_files = get_files(
+         path="my_path",            ##  set search path
+         list_name = "file_list"    ##  set output file 
+         )
+      my_get_files.search_files(
+         path="my_path",            ##  override search path
+         list_name = "file_list"    ##  override output file 
+         )
+   '''
    
    def __init__(self,**kwargs):
       self._path = os.getcwd()

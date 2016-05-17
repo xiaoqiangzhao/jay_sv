@@ -5,10 +5,23 @@ import re
 import sqlite3
 
 class analysis_files(object):
-   re_class = re.compile(r'^\s{0,}(virtual)?\s{0,}class\s+(.*)\s+extends\s+(\w+)')  ## group[1]: virtual group[2]: class name group[3]: parent name
+   re_class = re.compile(r'^\s{0,}(virtual)?\s{0,}class\s+([`\w]+)\s+((#\(.*)|)extends\s+(\w+)')  
+   re_class_no_parent = re.compile(r'^\s{0,}(virtual)?\s{0,}class\s+([\w]+)\s{0,}')
+
+   ## group[1]: virtual 
+   ## group[2]: class name 
+   ## group[3] : have a parent? 
+   ## group[4]: parent name
    re_end_class = re.compile(r'^\s{0,}endclass')  ## end of class
-   re_function = re.compile(r'^\s{0,}(virtual)?\s{0,}function\s+([`\w]+\s+|)(([`\w]+)::|)([`\w]+)\s{0,}\(')   ## group[1]: virtual  group[2]: return type group[4:3]: extern function or not    group[5]: function name
-   re_task = re.compile(r'^\s{0,}(virtual)?\s{0,}task\s+(([`\w]+)::|)([`\w]+)\s{0,}\(')## group[1]: virtual    group[3:2] extern task or not    group[4]: task name
+   re_function = re.compile(r'^\s{0,}(virtual)?\s{0,}(static)?\s{0,}(local)?\s{0,}(protected)?\s{0,}function\s+([`\w]+\s+|)(([`\w]+)::|)([`\w]+)\s{0,}\(')   
+   ## group[1]: virtual  
+   ## group[2]: return type 
+   ## group[4:3]: extern function or not    
+   ## group[5]: function name
+   re_task = re.compile(r'^\s{0,}(virtual)?\s{0,}(static)?\s{0,}(local)?\s{0,}(protected)?\s{0,}task\s+(([`\w]+)::|)([`\w]+)\s{0,}\(')
+   ## group[1]: virtual    
+   ## group[3:2] extern task or not    
+   ## group[4]: task name
 
    _file_list = "./file_list"    ## default file list
    output_db = "./db/default.db"   ## set default args
@@ -42,7 +55,7 @@ class analysis_files(object):
       output_db = self.output_db
       ana_type  = self.ana_type
       table_name = self.table_name
-      print("-----------------File: "+file_name+"------------------------")
+      print("-----------------File: "+file_name+"  ------------------------")
 
       if "arg_output_db" in kwargs :
          output_db = kwargs["arg_output_db"]
@@ -55,14 +68,17 @@ class analysis_files(object):
       mx_cursor = mx_conn.cursor()
       class_found = False
       my_class = []
-      current_class = ""
+      current_class = "NONE"
       my_class_parent = dict() 
       functions = dict()    ## store function names
+      functions["NONE"] = []
       tasks = dict()
+      tasks["NONE"] = []
       with open (file_name,'r') as f:
          for line in f.readlines():
             line=line.strip()
             line_class = self.re_class.match(line)
+            line_class_no_parent = self.re_class_no_parent.match(line)
             line_end_class = self.re_end_class.match(line)
             line_function = self.re_function.match(line)
             line_task = self.re_task.match(line)
@@ -70,7 +86,14 @@ class analysis_files(object):
                class_found = True
                current_class = line_class.group(2)
                my_class.append(line_class.group(2))
-               my_class_parent[current_class] = line_class.group(3)
+               my_class_parent[current_class] = line_class.group(5)
+               functions[current_class]=[]
+               tasks[current_class]=[]
+            elif line_class_no_parent:
+               class_found = True
+               current_class = line_class_no_parent.group(2)
+               my_class.append(line_class_no_parent.group(2))
+               my_class_parent[current_class] = ""
                functions[current_class]=[]
                tasks[current_class]=[]
                # print("class %s parent %s" % (line_class.group(2),line_class.group(3)))
@@ -78,17 +101,16 @@ class analysis_files(object):
                class_found = False
                # print("End of Class")
             if line_function:
-               # print(line_function.groups())
-               if line_function.group(4):
-                  functions[line_function.group(4)].append(line_function.group(5))
+               if line_function.group(7):
+                  functions[line_function.group(7)].append(line_function.group(8))
                else:
-                  functions[current_class].append(line_function.group(5))
+                  functions[current_class].append(line_function.group(8))
             if line_task:
                # print(line_task.groups())
-               if line_task.group(3):
-                  tasks[line_task.group(3)].append(line_task.group(4))
+               if line_task.group(6):
+                  tasks[line_task.group(6)].append(line_task.group(7))
                else:
-                  tasks[current_class].append(line_task.group(4))
+                  tasks[current_class].append(line_task.group(7))
 
       for cla in my_class:
          str_function = " ".join(functions[cla])
@@ -99,7 +121,7 @@ class analysis_files(object):
          print("Fuctions: "+str_function)
          print("Tasks   : "+str_task)
          print("---------------------------------------------------------------")
-         mx_cursor.execute('insert into %s (class_name,parent_name,tasks,functions,file_location) values (?,?,?,?,?)' % table_name, (cla, my_class_parent[cla], str_function, str_task, file_name))
+         mx_cursor.execute('insert into %s (class, parent, task, function, file_location) values (?,?,?,?,?)' % table_name, (cla, my_class_parent[cla], str_function, str_task, file_name))
 
       mx_cursor.close()
       mx_conn.commit()
@@ -125,7 +147,7 @@ class analysis_files(object):
       if self.IsTableExist(mx_cursor,table_name):
          print("table %s already exist, delete and re-generate" % table_name)
          mx_cursor.execute('drop table %s'% table_name)
-      mx_cursor.execute('create table %s (id integer primary key autoincrement,class_name tinytext,parent_name tinytext,tasks text,functions text,file_location tinytext)' % table_name)
+      mx_cursor.execute('create table %s (id integer primary key autoincrement,class tinytext,parent tinytext, task text, function text, file_location tinytext)' % table_name)
       mx_cursor.close()
       mx_conn.commit()
       mx_conn.close()
