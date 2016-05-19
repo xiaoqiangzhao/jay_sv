@@ -23,14 +23,11 @@ class analysis_files(object):
    ## group[3:2] extern task or not    
    ## group[4]: task name
 
-   _file_list = "./file_list"    ## default file list
-   output_db = "./db/default.db"   ## set default args
-   ana_type = "sv"
-   table_name = "classes"
    def __init__(self,**kwargs):
       print("initialization...")
-      self._file_list = "./file_list"    ## default file list
-      self.output_db = "./db/default.db"   ## set default args
+      self.work_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
+      self._file_list = os.path.join(self.work_dir,"template/file_list")    ## default file list
+      self.output_db = os.path.join(self.work_dir,"db/default.db")
       self.ana_type = "sv"
       self.table_name = "classes"
 
@@ -74,6 +71,7 @@ class analysis_files(object):
       functions["NONE"] = []
       tasks = dict()
       tasks["NONE"] = []
+      file_base_name = os.path.basename(file_name)   ## get base name
       with open (file_name,'r') as f:
          for line in f.readlines():
             line=line.strip()
@@ -113,15 +111,17 @@ class analysis_files(object):
                   tasks[current_class].append(line_task.group(7))
 
       for cla in my_class:
-         str_function = " ".join(functions[cla])
-         str_task = " ".join(tasks[cla])
+         str_function = "||".join(functions[cla])
+         str_task = "||".join(tasks[cla])
          print("---------------------------------------------------------------")
+         print("File    : "+file_base_name)
          print("Class   : "+cla)
          print("Parent  : "+my_class_parent[cla])
          print("Fuctions: "+str_function)
          print("Tasks   : "+str_task)
          print("---------------------------------------------------------------")
-         mx_cursor.execute('insert into %s (class, parent, task, function, file_location) values (?,?,?,?,?)' % table_name, (cla, my_class_parent[cla], str_function, str_task, file_name))
+         mx_cursor.execute('insert into %s (class, parent,function ,task , file_location, file_base_name) values (?,?,?,?,?,?)' % table_name, (cla, my_class_parent[cla], str_function, str_task, file_name, file_base_name))
+         
 
       mx_cursor.close()
       mx_conn.commit()
@@ -147,7 +147,7 @@ class analysis_files(object):
       if self.IsTableExist(mx_cursor,table_name):
          print("table %s already exist, delete and re-generate" % table_name)
          mx_cursor.execute('drop table %s'% table_name)
-      mx_cursor.execute('create table %s (id integer primary key autoincrement,class tinytext,parent tinytext, task text, function text, file_location tinytext)' % table_name)
+      mx_cursor.execute('create table %s (id integer primary key autoincrement,class tinytext,parent tinytext, function text, task text,  file_location tinytext, file_base_name tinytext)' % table_name)
       mx_cursor.close()
       mx_conn.commit()
       mx_conn.close()
