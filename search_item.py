@@ -97,7 +97,7 @@ class search_item(object):
                finall_result = result_item
                valid_index = True
                break
-         if not valid_index:
+         if not valid_index:      ## can used else instead of valid_index check
             raise ValueError("Invalid Index")
       print("------------------------------ Result of %s %s -------------------------" % (self.search_type, self.target_name))
       print("----- File Name    : "+finall_result[6])
