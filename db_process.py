@@ -39,8 +39,8 @@ for o,a in opts:
    if o in ("--help"):
       help()
 
-print(os.path.abspath(sys.argv[0]))
-work_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
+print(os.path.abspath(os.path.realpath(sys.argv[0])))
+work_dir = os.path.dirname(os.path.abspath(os.path.realpath(sys.argv[0])))
 temp_file = os.path.join(work_dir,"template/temp_file")
 db_file = os.path.join(work_dir,"db",target_db)
 print(work_dir)
