@@ -6,16 +6,16 @@ class get_files(object):
    example:
       my_get_files = get_files(
          path="my_path",            ##  set search path
-         list_name = "file_list"    ##  set output file 
+         list_name = "file_list"    ##  set output file
          replace = True             ##  replace the file if existing  or add to the end when set to False
          )
       my_get_files.search_files(
          path="my_path",            ##  override search path
-         list_name = "file_list"    ##  override output file 
+         list_name = "file_list"    ##  override output file
          replace = True             ##  override replace
          )
    '''
-   
+
    def __init__(self,**kwargs):
       self._path = os.getcwd()
       self._list_name = "file_list"
@@ -34,7 +34,7 @@ class get_files(object):
    def search_files(self,*args,**kwargs):
       if not args:
          raise ValueError("no args specified")
-      
+
       if "path" in kwargs:
          self._path = kwargs["path"]
       if "list_name" in kwargs:
@@ -61,7 +61,7 @@ class get_files(object):
    def search_multi_dir(self, *args, **kwargs):
       if not args:
          raise ValueError("no args specified")
-      
+
       if "paths" in kwargs:
          paths = kwargs["paths"]
          if not (isinstance(paths,list)):   ## check if paths is a list

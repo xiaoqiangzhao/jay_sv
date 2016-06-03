@@ -35,17 +35,17 @@ for o,a in opts:
    if o in ("--ana_type"):
       ana_type = a
    if o in ("--dir"):
-      search_dir = a
+      search_dir = os.path.abspath(a)
    if o in ("--help"):
       help()
 
 print(os.path.abspath(os.path.realpath(sys.argv[0])))
 work_dir = os.path.dirname(os.path.abspath(os.path.realpath(sys.argv[0])))
 temp_file = os.path.join(work_dir,"template/temp_file")
-db_file = os.path.join(work_dir,"db",target_db)
+db_files =  re.split(r'[;,\s]+',target_db)
 print(work_dir)
 print(temp_file)
-print(db_file)
+print("Database Used: {}".format(db_files))
 # sys.exit()
 if not target_db:
    raise ValueError("Need Target Database File")
@@ -66,9 +66,14 @@ if update:
    jay_get_files = get_files(list_name = temp_file)
    jay_get_files.search_files(*file_type, path = search_dir )
 
+   db_file = os.path.join(work_dir,"db",db_files[0])
    jay_analysis_files = analysis_files(output_db = db_file)
    jay_analysis_files.update_db(arg_table_name = table_name, arg_ana_type = ana_type, arg_file_list = temp_file)
 else:
    jay_search_item = search_item()
-   jay_search_item.config(target_type = ana_type, db = db_file, table = table_name, level = 1, open_result = False)
-   jay_search_item.patch_search(target_name, target_type = ana_type, search_type = search_type)
+   for db_i in db_files:
+       db_file = os.path.join(work_dir,"db",db_i)
+       jay_search_item.config(target_type = ana_type, db = db_file, table = table_name, level = 1, open_result = True)
+       jay_search_item.patch_search(target_name, target_type = ana_type, search_type = search_type)
+       if jay_search_item.hit:
+           break
