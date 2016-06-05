@@ -1,4 +1,4 @@
-#! /home/b51816/localpython/python3/bin/python3
+#! /usr/local/bin/python3
 import os
 import sys
 class get_files(object):
@@ -6,16 +6,16 @@ class get_files(object):
    example:
       my_get_files = get_files(
          path="my_path",            ##  set search path
-         list_name = "file_list"    ##  set output file 
+         list_name = "file_list"    ##  set output file
          replace = True             ##  replace the file if existing  or add to the end when set to False
          )
       my_get_files.search_files(
          path="my_path",            ##  override search path
-         list_name = "file_list"    ##  override output file 
+         list_name = "file_list"    ##  override output file
          replace = True             ##  override replace
          )
    '''
-   
+
    def __init__(self,**kwargs):
       self._path = os.getcwd()
       self._list_name = "file_list"
@@ -34,7 +34,7 @@ class get_files(object):
    def search_files(self,*args,**kwargs):
       if not args:
          raise ValueError("no args specified")
-      
+
       if "path" in kwargs:
          self._path = kwargs["path"]
       if "list_name" in kwargs:
@@ -61,7 +61,7 @@ class get_files(object):
    def search_multi_dir(self, *args, **kwargs):
       if not args:
          raise ValueError("no args specified")
-      
+
       if "paths" in kwargs:
          paths = kwargs["paths"]
          if not (isinstance(paths,list)):   ## check if paths is a list
@@ -77,10 +77,11 @@ class get_files(object):
       for p in paths:
          self.search_files(*args, path = p, replace = False)
 
+
    pass
 
 if __name__=='__main__':
-   test_c = get_files(list_name="file_list_1",path="/proj/ult1/design/workarea/b51816/ULT1_TO1P1_PROD/blocks/gpcv2/testbench")
+   test_c = get_files(list_name="file_list_1",path="./")
    # test_c.search_files("sv","py",replace = True)
-   # test_c.search_files("sv","py",replace = False, path = os.path.dirname(os.path.abspath(sys.argv[0])))
-   test_c.search_multi_dir("sv", "py", replace = True, paths = ["/proj/ult1/design/workarea/b51816/ULT1_TO1P1_PROD/blocks/gpcv2/testbench", os.path.dirname(os.path.abspath(sys.argv[0]))])
+   test_c.search_files("sv","py",replace = False, path = os.path.dirname(os.path.abspath(sys.argv[0])))
+#   test_c.search_multi_dir("sv", "py", replace = True, paths = ["/proj/ult1/design/workarea/b51816/ULT1_TO1P1_PROD/blocks/gpcv2/testbench", os.path.dirname(os.path.abspath(sys.argv[0]))])

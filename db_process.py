@@ -1,4 +1,4 @@
-#! /home/b51816/localpython/python3/bin/python3
+#! /usr/local/bin/python3
 import os
 import sys
 import re
@@ -9,7 +9,7 @@ from search_item import search_item
 import getopt
 
 update = False
-target_db = "jay_uvm.db"   ## default dbb
+target_dbr = "jay_uvm.db"   ## default dbb
 target_name = ""
 search_type = "class"   ## default search_type
 ana_type = "sv"

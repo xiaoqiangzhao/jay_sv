@@ -1,4 +1,4 @@
-#! /home/b51816/localpython/python3/bin/python3
+#! /usr/local/bin/python3
 import os
 import sys
 import re
@@ -12,7 +12,7 @@ class VERBOSE(Enum):
 class search_item(object):
    '''example:
          my_search = search_item()
-         my_search.config( 
+         my_search.config(
             target_type = "type",      ## set target type ["sv", wait for add]
             db = "db",                 ## set database file used
             table = "table",           ## set search table
@@ -21,13 +21,13 @@ class search_item(object):
          )
 
          my_search.search_sv(
-            name, 
+            name,
             search_type = "type",      ## search_type should be among  self.search_type_scope[self.search_type]
             level = 1,                 ## override config
             open_result = True|False,  ## override config
          )
    '''
-   
+
    search_type_scope = dict()
    def __init__(self):
       self.target_name = ""
@@ -79,10 +79,10 @@ class search_item(object):
       else:
          mx_cursor.execute('select * from %s where %s like ?' % (self.table, self.search_type), ('%'+self.target_name+'%',))
       mx_results =mx_cursor.fetchall()
-      
+
       valid_index = False
       # print(type(mx_results),mx_results.__len__())
-      if mx_results.__len__() == 0: 
+      if mx_results.__len__() == 0:
          print("No item recored for %s of %s" % (self.search_type, self.target_name))
          sys.exit()
       elif mx_results.__len__() == 1:
@@ -115,16 +115,16 @@ class search_item(object):
 
       if self.open_result:
          os.system("gvim %s" % finall_result[5])
-      
+
       if self.search_type == "class":
          next_search_level = 1
          if finall_result[2] and (self.level != 1):
             if self.level:  ## > 1
-               next_search_level = self.level - 1 
+               next_search_level = self.level - 1
             search_parent = input("Continue Search Parent %s ?:(yes|no) " % finall_result[2])
             if search_parent == "yes":
                self.search_sv(finall_result[2], search_type = "class", level = next_search_level )
-         
+
    def patch_search(self, name, target_type, **kwargs):
       if target_type == "sv":
          self.search_sv(name, **kwargs)

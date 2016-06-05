@@ -1,26 +1,26 @@
-#! /home/b51816/localpython/python3/bin/python3
+#! /usr/local/bin/python3
 import os
 import sys
 import re
 import sqlite3
 
 class analysis_files(object):
-   re_class = re.compile(r'^\s{0,}(virtual)?\s{0,}class\s+([`\w]+)\s+((#\(.*)|)extends\s+(\w+)')  
+   re_class = re.compile(r'^\s{0,}(virtual)?\s{0,}class\s+([`\w]+)\s+((#\(.*)|)extends\s+(\w+)')
    re_class_no_parent = re.compile(r'^\s{0,}(virtual)?\s{0,}class\s+([\w]+)\s{0,}')
 
-   ## group[1]: virtual 
-   ## group[2]: class name 
-   ## group[3] : have a parent? 
+   ## group[1]: virtual
+   ## group[2]: class name
+   ## group[3] : have a parent?
    ## group[4]: parent name
    re_end_class = re.compile(r'^\s{0,}endclass')  ## end of class
-   re_function = re.compile(r'^\s{0,}(virtual)?\s{0,}(static)?\s{0,}(local)?\s{0,}(protected)?\s{0,}function\s+([`\w]+\s+|)(([`\w]+)::|)([`\w]+)\s{0,}\(')   
-   ## group[1]: virtual  
-   ## group[2]: return type 
-   ## group[4:3]: extern function or not    
+   re_function = re.compile(r'^\s{0,}(virtual)?\s{0,}(static)?\s{0,}(local)?\s{0,}(protected)?\s{0,}function\s+([`\w]+\s+|)(([`\w]+)::|)([`\w]+)\s{0,}\(')
+   ## group[1]: virtual
+   ## group[2]: return type
+   ## group[4:3]: extern function or not
    ## group[5]: function name
    re_task = re.compile(r'^\s{0,}(virtual)?\s{0,}(static)?\s{0,}(local)?\s{0,}(protected)?\s{0,}task\s+(([`\w]+)::|)([`\w]+)\s{0,}\(')
-   ## group[1]: virtual    
-   ## group[3:2] extern task or not    
+   ## group[1]: virtual
+   ## group[3:2] extern task or not
    ## group[4]: task name
 
    def __init__(self,**kwargs):
@@ -40,7 +40,7 @@ class analysis_files(object):
       if "source_file" in kwargs:
          self._file_list = kwargs["source_file"]
 
-   def IsTableExist(self,cursor,table_name): 
+   def IsTableExist(self,cursor,table_name):
       cursor.execute('select name from sqlite_master where type="table" and name = ?',(table_name,))
       table=cursor.fetchall()
       if table:
@@ -66,7 +66,7 @@ class analysis_files(object):
       class_found = False
       my_class = []
       current_class = "NONE"
-      my_class_parent = dict() 
+      my_class_parent = dict()
       functions = dict()    ## store function names
       functions["NONE"] = []
       tasks = dict()
@@ -121,7 +121,7 @@ class analysis_files(object):
          print("Tasks   : "+str_task)
          print("---------------------------------------------------------------")
          mx_cursor.execute('insert into %s (class, parent,function ,task , file_location, file_base_name) values (?,?,?,?,?,?)' % table_name, (cla, my_class_parent[cla], str_function, str_task, file_name, file_base_name))
-         
+
 
       mx_cursor.close()
       mx_conn.commit()
