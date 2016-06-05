@@ -4,6 +4,7 @@ import sys
 import re
 import sqlite3
 from collections import deque
+from jay_wraps import time_cost
 
 class analysis_files(object):
    re_class = re.compile(r'^\s{0,}(virtual)?\s{0,}class\s+([`\w]+)\s+((#\(.*)|)extends\s+(\w+)')
@@ -143,6 +144,7 @@ class analysis_files(object):
       mx_conn.commit()
       mx_conn.close()
 
+   @time_cost
    def update_db(self,**kwargs):
       output_db = self.output_db
       ana_type  = self.ana_type

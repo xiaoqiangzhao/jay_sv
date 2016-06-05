@@ -70,6 +70,7 @@ if update:
 
    db_file = os.path.join(work_dir,"db",db_files[0])
    jay_analysis_files = analysis_files(output_db = db_file)
+   jay_analysis_files.update_db.set_verbose()
    jay_analysis_files.update_db(arg_table_name = table_name, arg_ana_type = ana_type, arg_file_list = temp_file, arg_ana_len = ana_len)
 else:
    jay_search_item = search_item()
