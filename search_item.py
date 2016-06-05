@@ -38,6 +38,7 @@ class search_item(object):
       self.db = "./db/default.db"
       self.table = "classes"
       self.level = "1"  ## default only search current level, no up to parent
+      self.hit=False
       self.open_result = False
 
    def config(self, **kwargs): #search_type,db,table,level):
@@ -56,6 +57,7 @@ class search_item(object):
          if not kwargs["open_result"] in [True,False]:
             raise ValueError("Invalid arg for open_result, should be True or False")
          self.open_result = kwargs["open_result"]
+      print(os.path.basename(self.db).center(80,'*'))
 
    def search_sv(self, name, **kwargs):
       self.target_name = name
@@ -84,10 +86,11 @@ class search_item(object):
       # print(type(mx_results),mx_results.__len__())
       if mx_results.__len__() == 0:
          print("No item recored for %s of %s" % (self.search_type, self.target_name))
-         sys.exit()
       elif mx_results.__len__() == 1:
          finall_result = mx_results.pop()
+         self.hit=True
       else:
+         self.hit=True
          for result_item in mx_results:
             print(result_item[0],result_item[5])
          index = input("Please choose the wanted item:")
@@ -99,22 +102,33 @@ class search_item(object):
                break
          if not valid_index:      ## can used else instead of valid_index check
             raise ValueError("Invalid Index")
-      print("------------------------------ Result of %s %s -------------------------" % (self.search_type, self.target_name))
-      print("----- File Name    : "+finall_result[6])
-      print("----- Class Name   : "+finall_result[1])
-      print("----- Parent Name  : "+finall_result[2])
-      print("----- Function List: ")
-      finall_result_functions = finall_result[3].split("||")
-      for f in finall_result_functions:
-         print("-----                "+f)
-      print("----- Task List    : ")
-      finall_result_tasks = finall_result[4].split("||")
-      for t in finall_result_tasks:
-         print("-----                "+t)
-      print("----- File Location: "+finall_result[5])
+      if self.hit:
+          print("------------------------------ Result of %s %s -------------------------" % (self.search_type, self.target_name))
+          print("----- File Name    : "+finall_result[6])
+          print("----- Class Name   : "+finall_result[1])
+          print("----- Parent Name  : "+finall_result[2])
+          print("----- Function List: ")
+          finall_result_functions = finall_result[3].split("||")
+          for f in finall_result_functions:
+             print("-----                "+f)
+          print("----- Task List    : ")
+          finall_result_tasks = finall_result[4].split("||")
+          for t in finall_result_tasks:
+             print("-----                "+t)
+          print("----- File Location: "+finall_result[5])
 
-      if self.open_result:
-         os.system("gvim %s" % finall_result[5])
+          if self.open_result:
+             os.system("gvim %s" % finall_result[5])
+
+          if self.search_type == "class":
+             next_search_level = 1
+             if finall_result[2] and (self.level != 1):
+                if self.level:  ## > 1
+                   next_search_level = self.level - 1
+                search_parent = input("Continue Search Parent %s ?:(yes|no) " % finall_result[2])
+                if search_parent == "yes":
+                   self.search_sv(finall_result[2], search_type = "class", level = next_search_level )
+
 
       if self.search_type == "class":
          next_search_level = 1

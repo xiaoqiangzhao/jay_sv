@@ -3,6 +3,7 @@ import os
 import sys
 import re
 import sqlite3
+from collections import deque
 
 class analysis_files(object):
    re_class = re.compile(r'^\s{0,}(virtual)?\s{0,}class\s+([`\w]+)\s+((#\(.*)|)extends\s+(\w+)')
@@ -30,6 +31,7 @@ class analysis_files(object):
       self.output_db = os.path.join(self.work_dir,"db/default.db")
       self.ana_type = "sv"
       self.table_name = "classes"
+      self.ana_len = 1   ## lines merged together for analysis
 
       if "output_db" in kwargs:
          self.output_db = kwargs["output_db"]
@@ -39,6 +41,8 @@ class analysis_files(object):
          self.table_name = kwargs["table_name"]
       if "source_file" in kwargs:
          self._file_list = kwargs["source_file"]
+      if "ana_len" in kwargs :
+         self.ana_len = kwargs["ana_len"]
 
    def IsTableExist(self,cursor,table_name):
       cursor.execute('select name from sqlite_master where type="table" and name = ?',(table_name,))
@@ -49,17 +53,22 @@ class analysis_files(object):
          return False
 
    def analysis(self,file_name,**kwargs):
+      print("-----------------File: "+file_name+"  ------------------------")
+
       output_db = self.output_db
       ana_type  = self.ana_type
       table_name = self.table_name
-      print("-----------------File: "+file_name+"  ------------------------")
-
+      ana_len = self.ana_len
       if "arg_output_db" in kwargs :
          output_db = kwargs["arg_output_db"]
       if "arg_ana_type" in kwargs:
          ana_type = kwargs["arg_ana_type"]
       if "arg_table_name" in kwargs:
          table_name = kwargs["arg_table_name"]
+      if "arg_ana_len" in kwargs :
+         ana_len = kwargs["arg_ana_len"]
+
+      text2ana = deque(maxlen=ana_len)
 
       mx_conn = sqlite3.connect(output_db)
       mx_cursor = mx_conn.cursor()
@@ -72,9 +81,16 @@ class analysis_files(object):
       tasks = dict()
       tasks["NONE"] = []
       file_base_name = os.path.basename(file_name)   ## get base name
+      print("ana text depth is {}".format(ana_len))
       with open (file_name,'r') as f:
-         for line in f.readlines():
-            line=line.strip()
+         for text in f.readlines():
+            text = text.strip()
+            if not text:   ## skip empty line
+                continue
+            text2ana.append(text)
+            if len(text2ana) != ana_len :
+                continue
+            line = ' '.join(text2ana)
             line_class = self.re_class.match(line)
             line_class_no_parent = self.re_class_no_parent.match(line)
             line_end_class = self.re_end_class.match(line)
@@ -132,6 +148,7 @@ class analysis_files(object):
       ana_type  = self.ana_type
       table_name = self.table_name
       source_filelist = self._file_list
+      ana_len = self.ana_len
       if "arg_output_db" in kwargs :
          output_db = kwargs["arg_output_db"]
       if "arg_ana_type" in kwargs:
@@ -140,6 +157,8 @@ class analysis_files(object):
          table_name = kwargs["arg_table_name"]
       if "arg_file_list" in kwargs:
          source_filelist= kwargs["arg_file_list"]
+      if "arg_ana_len" in kwargs :
+         ana_len = kwargs["arg_ana_len"]
 
       print("connecting to database: %s"% os.path.abspath(output_db))
       mx_conn = sqlite3.connect(output_db)
@@ -154,10 +173,10 @@ class analysis_files(object):
       with open (source_filelist,'r') as f:
          for line in f.readlines():
             line=line.strip()
-            self.analysis(line,arg_output_db=output_db, arg_ana_type=ana_type, arg_table_name=table_name)
+            self.analysis(line,arg_output_db=output_db, arg_ana_type=ana_type, arg_table_name=table_name, arg_ana_len=ana_len)
    pass
 
 if __name__=='__main__':
-   a=analysis_files(output_db="./db/jay_uvm.db")
-   a.update_db(arg_file_list="jay_uvm.caf")
+   a=analysis_files(output_db="./db/jay_test.db")
+   a.update_db(arg_file_list="jay_test.caf", arg_ana_len = 3)
 
