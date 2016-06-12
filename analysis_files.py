@@ -75,6 +75,7 @@ class analysis_files(object):
       mx_cursor = mx_conn.cursor()
       class_found = False
       my_class = []
+      line_num = {}
       current_class = "NONE"
       my_class_parent = dict()
       functions = dict()    ## store function names
@@ -84,7 +85,7 @@ class analysis_files(object):
       file_base_name = os.path.basename(file_name)   ## get base name
       print("ana text depth is {}".format(ana_len))
       with open (file_name,'r') as f:
-         for text in f.readlines():
+         for num, text in enumerate(f.readlines()):
             text = text.strip()
             if not text:   ## skip empty line
                 continue
@@ -104,6 +105,7 @@ class analysis_files(object):
                my_class_parent[current_class] = line_class.group(5)
                functions[current_class]=[]
                tasks[current_class]=[]
+               line_num[current_class]= num
             elif line_class_no_parent:
                class_found = True
                current_class = line_class_no_parent.group(2)
@@ -111,6 +113,7 @@ class analysis_files(object):
                my_class_parent[current_class] = ""
                functions[current_class]=[]
                tasks[current_class]=[]
+               line_num[current_class]= num
                # print("class %s parent %s" % (line_class.group(2),line_class.group(3)))
             if line_end_class:
                class_found = False
@@ -137,7 +140,7 @@ class analysis_files(object):
          print("Fuctions: "+str_function)
          print("Tasks   : "+str_task)
          print("---------------------------------------------------------------")
-         mx_cursor.execute('insert into %s (class, parent,function ,task , file_location, file_base_name) values (?,?,?,?,?,?)' % table_name, (cla, my_class_parent[cla], str_function, str_task, file_name, file_base_name))
+         mx_cursor.execute('insert into %s (class, parent,function ,task , file_location, file_base_name, line_num) values (?,?,?,?,?,?,?)' % table_name, (cla, my_class_parent[cla], str_function, str_task, file_name, file_base_name,line_num[cla]))
 
 
       mx_cursor.close()
@@ -168,7 +171,7 @@ class analysis_files(object):
       if self.IsTableExist(mx_cursor,table_name):
          print("table %s already exist, delete and re-generate" % table_name)
          mx_cursor.execute('drop table %s'% table_name)
-      mx_cursor.execute('create table %s (id integer primary key autoincrement,class tinytext,parent tinytext, function text, task text,  file_location tinytext, file_base_name tinytext)' % table_name)
+      mx_cursor.execute('create table %s (id integer primary key autoincrement,class tinytext,parent tinytext, function text, task text,  file_location tinytext, file_base_name tinytext, line_num integer)' % table_name)
       mx_cursor.close()
       mx_conn.commit()
       mx_conn.close()

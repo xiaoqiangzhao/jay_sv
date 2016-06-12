@@ -116,9 +116,10 @@ class search_item(object):
           for t in finall_result_tasks:
              print("-----                "+t)
           print("----- File Location: "+finall_result[5])
+          print("----- Line Num     : %d" % finall_result[7])
 
           if self.open_result:
-             os.system("gvim %s" % finall_result[5])
+             os.system("gvim +%d %s" % (finall_result[7],finall_result[5]))
 
           if self.search_type == "class":
              next_search_level = 1
@@ -130,14 +131,6 @@ class search_item(object):
                    self.search_sv(finall_result[2], search_type = "class", level = next_search_level )
 
 
-      if self.search_type == "class":
-         next_search_level = 1
-         if finall_result[2] and (self.level != 1):
-            if self.level:  ## > 1
-               next_search_level = self.level - 1
-            search_parent = input("Continue Search Parent %s ?:(yes|no) " % finall_result[2])
-            if search_parent == "yes":
-               self.search_sv(finall_result[2], search_type = "class", level = next_search_level )
 
    def patch_search(self, name, target_type, **kwargs):
       if target_type == "sv":
