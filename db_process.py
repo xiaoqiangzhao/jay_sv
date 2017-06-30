@@ -56,7 +56,7 @@ if (not update) and ((not search_type) or (not target_name)):
    raise ValueError("Need search_type and target_name")
 
 if ana_type == "sv":
-   file_type=("sv","svh")
+   file_type=("sv","svh","svp")
    table_name = "classes"
    ana_len = 3
 else:

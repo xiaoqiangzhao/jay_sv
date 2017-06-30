@@ -1,0 +1,23 @@
+In my understanding according to Python glossary, for those objects that are hashable, when you create a instance, a unchangeable value is also calculated according to the members or values of the instance, and that value can be used as a key in a dict, take below example:
+
+    >>> tuple_a = (1,2,3)
+    >>> tuple_b = (2,3,4)
+    >>> tuple_a.__hash__()
+    2528502973977326415
+    >>> tuple_b.__hash__()
+    3789705017596477050
+    >>> tuple_c = (1,2,3)
+    >>> tuple_c.__hash__()
+    2528502973977326415
+    >>> dict_a = {}
+    >>> dict_a[tuple_a] = 'hiahia'
+    >>> dict_a[tuple_c]
+    'hiahia'
+
+we can find that the hash value of tuple_a and tuple_c are the same since they have the same members, and when we use tuple_a as the key in dict_a, we can find that the value for dict_a[tuple_c] is the same which means , when used as the key in a dict, they are the same because the hash values are the same.
+For those objects that are not hashable, the method __hash__ is defined as None:
+
+    >>> type(dict.__hash__) 
+    <class 'NoneType'>
+ 
+I guess this hash value is calculated during the initialization of the instance, not in a dynamic way, that's why only these immutable objects are hashable. Hope this help~

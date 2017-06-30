@@ -85,7 +85,15 @@ class analysis_files(object):
       file_base_name = os.path.basename(file_name)   ## get base name
       print("ana text depth is {}".format(ana_len))
       with open (file_name,'r') as f:
-         for num, text in enumerate(f.readlines()):
+         try :
+             content = f.readlines()
+         except UnicodeDecodeError:
+             print("Unicode Error")
+             mx_cursor.close()
+             mx_conn.commit()
+             mx_conn.close()
+             return False
+         for num, text in enumerate(content):
             text = text.strip()
             if not text:   ## skip empty line
                 continue
@@ -118,15 +126,18 @@ class analysis_files(object):
             if line_end_class:
                class_found = False
                # print("End of Class")
+               # tasks and functions without class declaration will be dumped
             if line_function:
                if line_function.group(7):
-                  functions[line_function.group(7)].append(line_function.group(8))
+                  if line_function.group(7) in functions :
+                    functions[line_function.group(7)].append(line_function.group(8))
                else:
                   functions[current_class].append(line_function.group(8))
             if line_task:
                # print(line_task.groups())
                if line_task.group(6):
-                  tasks[line_task.group(6)].append(line_task.group(7))
+                   if line_task.group(6) in tasks:
+                      tasks[line_task.group(6)].append(line_task.group(7))
                else:
                   tasks[current_class].append(line_task.group(7))
 

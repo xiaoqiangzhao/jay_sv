@@ -1,0 +1,5 @@
+./configure --prefix=/home/b51816/localvim --with-features=huge  --enable-rubyinterp  --enable-largefile  --disable-netbeans   --enable-perlinterp  --enable-luainterp=dynamic  --with-luajit  --enable-gui=auto  --enable-fail-if-missing  --with-lua-prefix=/home/b51816/locallua --enable-luainterp  --enable-cscope
+
+reg2ips_adapter
+gpc_env
+ips2reg_adapter
